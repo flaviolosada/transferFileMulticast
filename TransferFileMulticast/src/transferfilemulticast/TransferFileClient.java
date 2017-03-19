@@ -15,15 +15,17 @@ class TransferFileClient {
 		MulticastSocket clientSocket = new MulticastSocket();
 		InetAddress endereco = InetAddress.getByName("227.55.77.99");
 		clientSocket.joinGroup(endereco);
-		                
-                sendData = "[TEXT]".getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, endereco, porta);
-                clientSocket.setTimeToLive(ttl);
-                clientSocket.send(sendPacket);
-                String serverName = receiveServerName();
-                clientSocket.leaveGroup(endereco);
-                clientSocket.close();
-                sendFileSocket(serverName);
+                File file = openFile();
+                if (file != null) {
+                    sendData = "[TEXT]".getBytes();
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, endereco, porta);
+                    clientSocket.setTimeToLive(ttl);
+                    clientSocket.send(sendPacket);
+                    String serverName = receiveServerName();
+                    clientSocket.leaveGroup(endereco);
+                    clientSocket.close();
+                    sendFileSocket(serverName, file);
+                }
 	}
         
         private static File openFile() {
@@ -58,16 +60,15 @@ class TransferFileClient {
             return "";
         }
         
-        private static void sendFileSocket(String ipServer) {
+        private static void sendFileSocket(String ipServer, File file) {
             Socket socket;
             byte[] sendData = new byte[1024];
             try {                
                 /* Inicializacao dos fluxos de entrada e saida */
-                File arquivo = openFile();
-                if (arquivo != null ) {
+                if (file != null ) {
                     /* Inicializacao de socket TCP */
-                    socket = new Socket(ipServer, 1996);
-                    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(arquivo));
+                    socket = new Socket(ipServer, 2500);
+                    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
                     bis.read(sendData);
                     socket.getOutputStream().write(sendData);
                     bis.close();

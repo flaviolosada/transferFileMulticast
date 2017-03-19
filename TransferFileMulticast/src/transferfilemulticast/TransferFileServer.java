@@ -32,6 +32,7 @@ public class TransferFileServer {
     private static String ipCliente = "";
     
     public static void main(String[] args) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(2500);
         String serverType = "[TEXT]";//args[0];
         int porta = 5000;
         String ip = "227.55.77.99";
@@ -46,17 +47,14 @@ public class TransferFileServer {
 			      recvData.length);
               socket.receive (recvPacket);
 	      
-              String sentence;
-	      sentence = new String(recvPacket.getData());
-	      System.out.print(recvPacket.getAddress().toString() +": ");
-              System.out.println (sentence);            
+              String sentence = new String(recvPacket.getData());
               if (serverType.equals(sentence.trim())) {        
                 ipCliente = recvPacket.getAddress().toString().substring(1);  
-                sendMyName(ipCliente); 
                 new Thread() {
                     @Override
                     public void run() {
-                        startSocket(ipCliente);
+                        sendMyName(ipCliente); 
+                        receiveFile(serverSocket);
                     }                    
                 }.start();
               } else {
@@ -95,16 +93,11 @@ public class TransferFileServer {
         }
     }
     
-    public static void startSocket(String ip) {
-        ServerSocket serverSocket;
-        Socket clientSocket;
+    public static void receiveFile(ServerSocket serverSocket) {
         byte[] stream = new byte[1024];
 
         try {
-            /* Inicializacao do server socket TCP */
-            serverSocket = new ServerSocket(1996);            
-                /* Espera por um cliente */
-            clientSocket = serverSocket.accept();
+            Socket clientSocket = serverSocket.accept();
             /* Preparacao dos fluxos de entrada e saida */
             BufferedInputStream bf = new BufferedInputStream(clientSocket.getInputStream());
             bf.read(stream);
